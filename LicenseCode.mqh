@@ -26,6 +26,7 @@ class CLicenseCode
       void           Init(string licenseCode, string key);
       bool           CheckLicense();
       int            GetLicenseStatus() { return m_LicenseStatus; }
+      string         GenerateLicenseCode(int accountLogin);
 };
 
 //+------------------------------------------------------------------+
@@ -73,14 +74,7 @@ bool CLicenseCode::CheckLicense()
    if (accountLogin < 1)
       return false;
    
-   uchar src[], dst[];
-   const uchar key[] = {};
-   string code = m_Key + string(accountLogin);
-   
-   StringToCharArray(code, src, 0, StringLen(code));
-   
-   if (CryptEncode(CRYPT_HASH_MD5, src, key, dst) <= 0 ||
-       StringCompare(ArrayToHex(dst), m_LicenseCode, true) != 0)
+   if (StringCompare(GenerateLicenseCode(accountLogin), m_LicenseCode, true) != 0)
    {
       m_LicenseStatus = -1;
       return false;
@@ -88,6 +82,26 @@ bool CLicenseCode::CheckLicense()
    
    m_LicenseStatus = 1;
    return true;
+}
+
+//+------------------------------------------------------------------+
+//| Generate License code                                            |
+//+------------------------------------------------------------------+
+string CLicenseCode::GenerateLicenseCode(int accountLogin)
+{
+   if (accountLogin < 1)
+      return "";
+   
+   uchar src[], dst[];
+   const uchar key[] = {};
+   string code = m_Key + string(accountLogin);
+   
+   StringToCharArray(code, src, 0, StringLen(code));
+   
+   if (CryptEncode(CRYPT_HASH_MD5, src, key, dst) <= 0)
+      return "";
+   
+   return ArrayToHex(dst);
 }
 
 //+------------------------------------------------------------------+
