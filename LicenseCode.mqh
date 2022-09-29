@@ -5,7 +5,7 @@
 //+------------------------------------------------------------------+
 #property copyright "Copyright 2021, Diamond Systems Corp."
 #property link      "https://github.com/mql-systems"
-#property version   "1.01"
+#property version   "1.02"
 #property strict
 
 enum ENUM_LICENSE_CODE_TYPE
@@ -32,6 +32,7 @@ class CLicenseCode
       
       bool                    CheckLct1(const int accountLogin);
       bool                    CheckLct2(const int accountLogin);
+      int                     RandomRange(const int min, const int max) { return MathRand() % (max - min + 1) + min; };
    
    public:
                               CLicenseCode(void);
@@ -45,6 +46,7 @@ class CLicenseCode
       //--- Generate
       string                  GenerateLicenseCode(const int accountLogin, const string saltMd5);
       string                  GenerateLicenseCode(const int accountLogin, const string saltMd5, const string saltAes32Bit, const datetime timeUntil);
+      string                  GenerateSalt(const bool forAes256 = false);
       //--- CRYPT
       string                  Md5(const string str);
       string                  Aes256Decode(const string base64, const string key);
@@ -54,7 +56,9 @@ class CLicenseCode
 //| Constructor                                                      |
 //+------------------------------------------------------------------+
 void CLicenseCode::CLicenseCode(void): m_LicenseStatus(0)
-{}
+{
+   MathSrand(GetTickCount());
+}
 
 //+------------------------------------------------------------------+
 //| Destructor                                                       |
@@ -190,6 +194,9 @@ string CLicenseCode::GenerateLicenseCode(const int accountLogin, const string sa
 //+------------------------------------------------------------------+
 string CLicenseCode::GenerateLicenseCode(const int accountLogin, const string saltMd5, const string saltAes32Bit, const datetime timeUntil)
 {
+   if (StringLen(saltAes32Bit) != 32 || StringLen(saltMd5) < 1)
+      return "";
+   
    string timeStr = string(int(timeUntil));
    string code = saltMd5 + string(accountLogin) + timeStr;
    code = Md5(code) + string(timeUntil);
@@ -207,6 +214,25 @@ string CLicenseCode::GenerateLicenseCode(const int accountLogin, const string sa
    }
    
    return "";
+}
+
+//+------------------------------------------------------------------+
+//| Generate salt (key)                                              |
+//+------------------------------------------------------------------+
+string CLicenseCode::GenerateSalt(const bool forAes256 = false)
+{
+   string strBase = "abcdefghijklmnopqrstuvwxyz" + "0123456789"; // 36
+   
+   if (! forAes256)
+      strBase += "ABCDEFGHIJKLMNOPQRSTUVWXYZ" + "!@#$&()?/+="; // 73
+   
+   string result = "";
+   int strBaseCnt = StringLen(strBase);
+   
+   for (int i=31; i>=0; i--)
+      result += StringSubstr(strBase, RandomRange(0, strBaseCnt-1), 1);
+   
+   return result;
 }
 
 //+------------------------------------------------------------------+
