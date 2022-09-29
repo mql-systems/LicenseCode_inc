@@ -5,7 +5,7 @@
 //+------------------------------------------------------------------+
 #property copyright "Copyright 2021, Diamond Systems Corp."
 #property link      "https://github.com/mql-systems"
-#property version   "1.00"
+#property version   "1.01"
 #property strict
 
 enum ENUM_LICENSE_CODE_TYPE
@@ -97,7 +97,10 @@ bool CLicenseCode::CheckLicense()
       if (m_CheckDay == Day())
          return true;
       else
-         m_CheckDay = 0;
+      {
+         m_CheckDay = Day();
+         m_LicenseStatus = 0;
+      }
    }
    else if (m_LicenseStatus == -1)
       return false;
