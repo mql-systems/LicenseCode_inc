@@ -5,7 +5,7 @@
 //+------------------------------------------------------------------+
 #property copyright "Copyright 2021, Diamond Systems Corp."
 #property link      "https://github.com/mql-systems"
-#property version   "1.02"
+#property version   "1.03"
 #property strict
 
 enum ENUM_LICENSE_CODE_TYPE
@@ -15,7 +15,7 @@ enum ENUM_LICENSE_CODE_TYPE
 };
 
 //+------------------------------------------------------------------+
-//| License Code                                                     |
+//| class CLicenseCode - Multi-MQL License Code                      |
 //+------------------------------------------------------------------+
 class CLicenseCode
 {
@@ -30,9 +30,12 @@ class CLicenseCode
       //---
       int                     m_CheckDay;
       
-      bool                    CheckLct1(const int accountLogin);
-      bool                    CheckLct2(const int accountLogin);
+      bool                    CheckLct1(const ulong accountLogin);
+      bool                    CheckLct2(const ulong accountLogin);
       int                     RandomRange(const int min, const int max) { return MathRand() % (max - min + 1) + min; };
+   
+   protected:
+      int                     Day();
    
    public:
                               CLicenseCode(void);
@@ -44,8 +47,8 @@ class CLicenseCode
       int                     GetLicenseStatus() { return m_LicenseStatus; };
       datetime                GetLicenseTime()   { return m_LicenseTime;   };
       //--- Generate
-      string                  GenerateLicenseCode(const int accountLogin, const string saltMd5);
-      string                  GenerateLicenseCode(const int accountLogin, const string saltMd5, const string saltAes32Bit, const datetime timeUntil);
+      string                  GenerateLicenseCode(const ulong ccountLogin, const string saltMd5);
+      string                  GenerateLicenseCode(const ulong accountLogin, const string saltMd5, const string saltAes32Bit, const datetime timeUntil);
       string                  GenerateSalt(const bool forAes256 = false);
       //--- CRYPT
       string                  Md5(const string str);
@@ -118,7 +121,7 @@ bool CLicenseCode::CheckLicense()
    if (! TerminalInfoInteger(TERMINAL_CONNECTED))
       return false;
    
-   int accountLogin = (int)AccountInfoInteger(ACCOUNT_LOGIN);
+   ulong accountLogin = (ulong)AccountInfoInteger(ACCOUNT_LOGIN);
    if (accountLogin < 1)
       return false;
    
@@ -147,7 +150,7 @@ bool CLicenseCode::CheckLicense()
 //+------------------------------------------------------------------+
 //| Check LicenseCode Type-1                                         |
 //+------------------------------------------------------------------+
-bool CLicenseCode::CheckLct1(const int accountLogin)
+bool CLicenseCode::CheckLct1(const ulong accountLogin)
 {
    string code = m_SaltMd5 + string(accountLogin);
    
@@ -157,7 +160,7 @@ bool CLicenseCode::CheckLct1(const int accountLogin)
 //+------------------------------------------------------------------+
 //| Check LicenseCode Type-2                                         |
 //+------------------------------------------------------------------+
-bool CLicenseCode::CheckLct2(const int accountLogin)
+bool CLicenseCode::CheckLct2(const ulong accountLogin)
 {
    //--- Decode and parse license
    string licenseDecode = Aes256Decode(m_LicenseCode, m_SaltAes32Bit);
@@ -174,7 +177,7 @@ bool CLicenseCode::CheckLct2(const int accountLogin)
    if (StringCompare(Md5(checkCode), md5Hash, true) != 0)
       return false;
    
-   m_LicenseTime = (datetime)timeStr;
+   m_LicenseTime = datetime(int(timeStr));
    
    return (m_LicenseTime > TimeCurrent());
 }
@@ -182,7 +185,7 @@ bool CLicenseCode::CheckLct2(const int accountLogin)
 //+------------------------------------------------------------------+
 //| Generate License code (for MD5 hash)                             |
 //+------------------------------------------------------------------+
-string CLicenseCode::GenerateLicenseCode(const int accountLogin, const string saltMd5)
+string CLicenseCode::GenerateLicenseCode(const ulong accountLogin, const string saltMd5)
 {
    string code = saltMd5 + string(accountLogin);
    
@@ -192,14 +195,14 @@ string CLicenseCode::GenerateLicenseCode(const int accountLogin, const string sa
 //+------------------------------------------------------------------+
 //| Generate License code (for AES-256 crypt)                        |
 //+------------------------------------------------------------------+
-string CLicenseCode::GenerateLicenseCode(const int accountLogin, const string saltMd5, const string saltAes32Bit, const datetime timeUntil)
+string CLicenseCode::GenerateLicenseCode(const ulong accountLogin, const string saltMd5, const string saltAes32Bit, const datetime timeUntil)
 {
    if (StringLen(saltAes32Bit) != 32 || StringLen(saltMd5) < 1)
       return "";
    
    string timeStr = string(int(timeUntil));
    string code = saltMd5 + string(accountLogin) + timeStr;
-   code = Md5(code) + string(timeUntil);
+   code = Md5(code) + timeStr;
    
    uchar src[], keyAes[], dstAes[], dstBase64[];
    const uchar keyBase64[] = {};
@@ -300,5 +303,23 @@ string CLicenseCode::Aes256Decode(const string base64, const string key)
    
    return "";
 }
+
+//+------------------------------------------------------------------+
+//| Day                                                              |
+//+------------------------------------------------------------------+
+int CLicenseCode::Day()
+{
+   #ifdef __MQL5__
+      MqlDateTime currentDatetime;
+      
+      if (! TimeToStruct(TimeCurrent(), currentDatetime))
+         return 0;
+      
+      return currentDatetime.day;
+   #else
+      return Day();
+   #endif
+}
+
 
 //+------------------------------------------------------------------+
