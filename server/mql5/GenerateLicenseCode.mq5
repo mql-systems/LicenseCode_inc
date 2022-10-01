@@ -14,8 +14,8 @@
 //--- enums
 enum ENUM_GENERATE_LICENSE_CODE_TYPE
 {
-   GLCT_LIFETIME = 1,
-   GLCT_LIMITED  = 2,
+   GLCT_LIFETIME = 1,   // Lifetime
+   GLCT_LIMITED  = 2,   // Limited
 };
 
 
