@@ -317,7 +317,7 @@ int CLicenseCode::Day()
       
       return currentDatetime.day;
    #else
-      return Day();
+      return ::Day();
    #endif
 }
 
