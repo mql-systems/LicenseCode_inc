@@ -34,6 +34,8 @@ Servers for generating keys and licenses
 
 CLicenseCode LicenseCode;
 
+input string i_LicenseCode = ""; // License code
+
 int OnInit()
 {
    //--- For a Lifetime license
@@ -47,7 +49,10 @@ void OnTick()
 {
    //--- License verifcation
    if (! LicenseCode.CheckLicense())
-      Comment("ERROR: License code!");
+   {
+      if (LicenseCode.GetLicenseStatus() == -1)
+         Comment("ERROR: License invalid - ",i_LicenseCode);
+   }
    else
       Comment("Price: ", SymbolInfoDouble(Symbol(), SYMBOL_BID));
 }
