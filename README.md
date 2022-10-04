@@ -5,16 +5,9 @@ Multi-MQL library for licensing systems written in the MQL4 and MQL5 languages.
 ## Install
 
 ```bash
-# Download
 git clone https://github.com/mql-systems/LicenseCode_inc.git MqlIncludes/DS/LicenseCode
 
-# For MQL4
-cd YourMT4Terminal/MQL4/Include
-mkdir DS
-ln -s MqlIncludes/DS/LicenseCode ./DS/LicenseCode
-
-# For MQL5
-cd YourMT5Terminal/MQL5/Include
+cd YourMT4(or5)Terminal/MQL4(or5)/Include
 mkdir DS
 ln -s MqlIncludes/DS/LicenseCode ./DS/LicenseCode
 ```
