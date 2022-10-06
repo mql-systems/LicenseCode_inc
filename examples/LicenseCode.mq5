@@ -23,6 +23,7 @@ CLicenseCode LicenseCode;
 int OnInit()
 {
    LicenseCode.Init(i_LicenseCode, "w0ypiN0X@$DSscTEY9/f!KeDlDnwVcv$", "b3541c2fbbfa62952349ce1a9b1f53b1");
+   LicenseCode.ExcludeAccount(123456789); // Test account
    
    return(INIT_SUCCEEDED);
 }
@@ -41,13 +42,14 @@ int OnCalculate(const int rates_total,
                 const long &volume[],
                 const int &spread[])
 {
+   //--- License verifcation
    if (! LicenseCode.CheckLicense())
    {
-      Comment("ERROR: License code!");
-      return rates_total;
+      if (LicenseCode.GetLicenseStatus() == -1)
+         Comment("ERROR: License invalid - ",i_LicenseCode);
    }
-   
-   Comment("Price: ", SymbolInfoDouble(Symbol(), SYMBOL_BID));
+   else
+      Comment("Price: ", SymbolInfoDouble(Symbol(), SYMBOL_BID));
    
    return(rates_total);
 }

@@ -36,6 +36,9 @@ int OnInit()
 
    //--- For a Limited license
    // LicenseCode.Init(i_LicenseCode, "KeyLifetime", "KeyLimited");
+   
+   //--- exclude a test (or any other) account
+   LicenseCode.ExcludeAccount(123456789);
 }
 
 void OnTick()
